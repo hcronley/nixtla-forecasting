@@ -24,7 +24,8 @@ pytorch-lightning>=2.0.0
 pydantic>=2.0.0
 
 # Ray for NeuralForecast distributed training (optional but recommended)
-ray>=2.5.0
+# Commenting out to avoid build issues on Streamlit Cloud
+# ray>=2.5.0
 
 # Additional utilities
 python-dateutil>=2.8.0
