@@ -389,41 +389,6 @@ def display_backtest_results(backtest_results: Dict[str, Any]):
     ranking_table = comparator.create_metric_comparison_table(top_n=10)
     st.dataframe(ranking_table, use_container_width=True, hide_index=True)
 
-    # Visualizations
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("📈 Top 3 Models Comparison")
-        fig = comparator.create_comparison_plot(top_n=3, metric='mae_mean')
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        st.subheader("🎯 Metric Comparison (Normalized)")
-        fig = comparator.create_multi_metric_comparison(top_n=3)
-        st.plotly_chart(fig, use_container_width=True)
-
-    # Window Performance Heatmap
-    st.subheader("🔥 Performance Across Windows")
-    fig = comparator.create_window_performance_heatmap()
-    st.plotly_chart(fig, use_container_width=True)
-
-    # Detailed heatmap
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("MAE Heatmap")
-        fig = comparator.create_metric_heatmap(metric='mae_mean')
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        st.subheader("MAPE Heatmap")
-        fig = comparator.create_metric_heatmap(metric='mape_mean')
-        st.plotly_chart(fig, use_container_width=True)
-
-    # Summary report
-    with st.expander("📄 Detailed Summary Report"):
-        report = create_summary_report(backtest_results)
-        st.text(report)
-
     # Save best model config
     if CONFIG_MANAGER_AVAILABLE:
         st.subheader("💾 Save Best Model Configuration")
