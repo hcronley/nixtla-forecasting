@@ -536,9 +536,7 @@ def display_backtest_results(backtest_results: Dict[str, Any], data: pd.DataFram
 
 
     # 🏁 HORSE RACE VISUALIZATIONS - TOP 5 MODEL COMPARISON
-    st.header("🏁 Top 5 Model Horse Race")
-    st.markdown("Compare the top 5 forecasting models across metrics and windows")
-    
+
     # Create 2-column layout for first two visualizations
     col1, col2 = st.columns([1, 1])
     
