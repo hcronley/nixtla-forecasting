@@ -46,6 +46,7 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.grok/
 *.swp
 *.swo
 *~
