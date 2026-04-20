@@ -311,8 +311,13 @@ class StatsforecastForecaster:
         # This is the default StatsForecast behavior - recursive forecasting
         forecast = sf.forecast(df=train_long, h=horizon)
 
-        forecast_df = forecast.copy()
+        # Reset index to convert date index to 'ds' column
+        forecast_df = forecast.reset_index()
         forecast_df = forecast_df.rename(columns={'Model': 'y_pred'})
+
+        # Ensure 'ds' column exists (StatsForecast uses this as index)
+        if 'ds' not in forecast_df.columns:
+            forecast_df = forecast_df.rename(columns={forecast_df.columns[0]: 'ds'})
 
         # Calculate metrics if test data provided
         metrics = None

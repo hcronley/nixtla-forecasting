@@ -358,10 +358,14 @@ class MLForecastForecaster:
         # Recursive forecasting (default behavior)
         forecast = mlf.predict(h=horizon)
 
-        # Extract predictions
-        pred_col = forecast.columns[-1]
-        forecast_df = forecast.copy()
+        # Reset index to convert date index to 'ds' column
+        forecast_df = forecast.reset_index()
+        pred_col = forecast_df.columns[-1]
         forecast_df = forecast_df.rename(columns={pred_col: 'y_pred'})
+
+        # Ensure 'ds' column exists
+        if 'ds' not in forecast_df.columns:
+            forecast_df = forecast_df.rename(columns={forecast_df.columns[0]: 'ds'})
 
         # Calculate metrics if test data provided
         metrics = None
