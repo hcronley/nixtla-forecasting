@@ -757,7 +757,25 @@ def main():
         res_label = st.sidebar.selectbox("Resolution:", options=list(resolution_map.keys()), index=0)
         resolution = resolution_map[res_label]
 
-        days_back = st.sidebar.slider("Days of history:", min_value=7, max_value=36500, value=365)
+        # History period selection
+        period = st.sidebar.radio(
+            "📅 History Period:",
+            ["1 Month", "3 Months", "1 Year", "5 Years", "10 Years", "Custom"],
+            horizontal=True
+        )
+
+        period_map = {
+            "1 Month": 30,
+            "3 Months": 90,
+            "1 Year": 365,
+            "5 Years": 1825,
+            "10 Years": 3650
+        }
+
+        if period == "Custom":
+            days_back = st.sidebar.slider("Days:", 7, 3650, 365)
+        else:
+            days_back = period_map[period]
 
         if st.sidebar.button("Fetch Stock Data"):
             try:
