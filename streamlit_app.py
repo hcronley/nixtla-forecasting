@@ -743,7 +743,7 @@ def main():
             st.sidebar.error("Sample data module not available")
             
     elif data_source == "Stock Data (Finnhub)":
-        st.sidebar.info("Fetch historical stock data using Finnhub API. Ensure FINNHUB_API_KEY is set in your .env file.")
+        st.sidebar.info("📊 Fetch historical stock data using Finnhub API.\n\n**Requirements:**\n- FINNHUB_API_KEY in .env file\n- **Pro+ Tier** for historical candles\n\n📈 Free tier: quotes only. Upgrade at https://finnhub.io/pricing")
         
         symbol = st.sidebar.text_input("Stock Symbol:", value="AAPL", help="e.g., AAPL, TSLA, MSFT, BTC/USD")
         
