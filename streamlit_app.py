@@ -396,6 +396,83 @@ def display_backtest_results(backtest_results: Dict[str, Any]):
     ranking_table = comparator.create_metric_comparison_table(top_n=10)
     st.dataframe(ranking_table, use_container_width=True, hide_index=True)
 
+    # Show best model's forecast on full dataset
+    st.subheader("📈 Best Model: Time Series Forecast")
+    try:
+        # Get best model info
+        best_summary = comparator.get_summary_table()
+        best_model_name = best_summary['Model']
+
+        st.caption(f"🏆 {best_model_name} - Top-ranked model forecast on full data")
+
+        # Get best model config
+        best_config = comparator.get_best_model_config()
+        module_type = best_config['module']
+        model_type = best_config['type']
+
+        # Run best model on full data
+        from df_statsforecast import train_test_split_ts
+
+        # Use 80/20 split for visualization
+        test_size_n = int(len(data) * 0.2)
+        train_full, test_full = train_test_split_ts(data, test_size=test_size_n)
+
+        # Run forecast with best model
+        forecast_params = {
+            'freq': metadata.get('freq', 'MS'),
+            'season_length': metadata.get('season_length', 12),
+            'horizon': min(len(test_full), 12)
+        }
+
+        if module_type == 'StatsForecast':
+            from df_statsforecast import StatsforecastForecaster
+            forecaster = StatsforecastForecaster()
+            best_results = forecaster.forecast(
+                train_full, test_full,
+                model_type=model_type,
+                strategy='Multi-step recursive',
+                **forecast_params
+            )
+        elif module_type == 'MLForecast':
+            from df_mlforecast import MLForecastForecaster
+            forecaster = MLForecastForecaster()
+            best_results = forecaster.forecast(
+                train_full, test_full,
+                model_type=model_type,
+                strategy='Multi-step recursive',
+                **forecast_params
+            )
+        elif module_type == 'NeuralForecast':
+            from df_neuralforecast import NeuralForecastForecaster
+            forecaster = NeuralForecastForecaster()
+            best_results = forecaster.forecast(
+                train_full, test_full,
+                model_type=model_type,
+                strategy='Multi-step recursive',
+                input_size=min(12, len(train_full) // 2),
+                **forecast_params
+            )
+
+        if best_results:
+            # Plot forecast
+            fig_best = plot_forecast_results(
+                best_results,
+                title=f"{best_model_name} ({module_type})"
+            )
+            st.plotly_chart(fig_best, use_container_width=True)
+
+            # Show metrics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("MAE", f"{best_results['metrics']['mae']:.4f}")
+            with col2:
+                st.metric("RMSE", f"{best_results['metrics']['rmse']:.4f}")
+            with col3:
+                st.metric("MAPE", f"{best_results['metrics']['mape']:.2f}%")
+
+    except Exception as e:
+        st.info(f"Best model forecast unavailable: {str(e)[:100]}")
+
     # Save best model config
     if CONFIG_MANAGER_AVAILABLE:
         st.subheader("💾 Save Best Model Configuration")
