@@ -28,3 +28,5 @@ ray>=2.5.0
 
 # Additional utilities
 python-dateutil>=2.8.0
+finnhub-python
+python-dotenv

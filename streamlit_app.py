@@ -47,6 +47,13 @@ except ImportError:
     SAMPLE_DATA_AVAILABLE = False
     st.warning("Sample data module not available. Only file upload will work.")
 
+# Import Finnhub client
+try:
+    from finnhub_client import fetch_stock_data
+    FINNHUB_AVAILABLE = True
+except ImportError:
+    FINNHUB_AVAILABLE = False
+
 # Import backtesting and reporting modules
 try:
     from backtesting import RollingWindowBacktester
@@ -675,10 +682,14 @@ def main():
 
     # Data Source Selection
     st.sidebar.subheader("1. Data Source")
+    data_source_options = ["Upload CSV", "Sample Dataset"]
+    if FINNHUB_AVAILABLE:
+        data_source_options.append("Stock Data (Finnhub)")
+        
     data_source = st.sidebar.radio(
         "Choose data source:",
-        ["Upload CSV", "Sample Dataset"],
-        help="Upload your own CSV file or use a pre-loaded example dataset"
+        data_source_options,
+        help="Upload CSV, use sample data, or fetch real-time stock data"
     )
 
     data = None
@@ -714,7 +725,7 @@ def main():
                     st.session_state.current_data = data
                     st.session_state.data_loaded = True
 
-    else:  # Sample Dataset
+    elif data_source == "Sample Dataset":
         if SAMPLE_DATA_AVAILABLE:
             dataset_name = st.sidebar.selectbox(
                 "Select dataset:",
@@ -730,6 +741,55 @@ def main():
                 st.session_state.data_loaded = True
         else:
             st.sidebar.error("Sample data module not available")
+            
+    elif data_source == "Stock Data (Finnhub)":
+        st.sidebar.info("Fetch historical stock data using Finnhub API. Ensure FINNHUB_API_KEY is set in your .env file.")
+        
+        symbol = st.sidebar.text_input("Stock Symbol:", value="AAPL", help="e.g., AAPL, TSLA, MSFT, BTC/USD")
+        
+        resolution_map = {
+            'Daily': 'D',
+            'Weekly': 'W',
+            'Monthly': 'M',
+            '60 min': '60',
+            '30 min': '30',
+            '15 min': '15',
+            '5 min': '5',
+            '1 min': '1'
+        }
+        
+        res_label = st.sidebar.selectbox("Resolution:", options=list(resolution_map.keys()), index=0)
+        resolution = resolution_map[res_label]
+        
+        days_back = st.sidebar.slider("Days of history:", min_value=7, max_value=3650, value=365)
+        
+        if st.sidebar.button("Fetch Stock Data"):
+            try:
+                with st.spinner(f"Fetching data for {symbol}..."):
+                    data = fetch_stock_data(symbol, resolution, days_back)
+                    
+                    if data is not None and not data.empty:
+                        st.sidebar.success(f"✅ Loaded {len(data)} rows for {symbol}")
+                        
+                        # Set metadata for frequency
+                        freq_map = {'D': 'D', 'W': 'W', 'M': 'M', '60': 'H'} # Simplified mapping
+                        metadata = {
+                            'freq': freq_map.get(resolution, 'D'),
+                            'season_length': 7 if resolution == 'D' else 12,
+                            'description': f"Historical {res_label} data for {symbol} from Finnhub",
+                            'recommended_horizon': 14 if resolution == 'D' else 12
+                        }
+                        
+                        st.session_state.current_data = data
+                        st.session_state.data_loaded = True
+                    else:
+                        st.sidebar.error("No data returned from Finnhub.")
+            except Exception as e:
+                st.sidebar.error(f"Error: {str(e)}")
+        
+        # Keep data if already loaded
+        if st.session_state.data_loaded and st.session_state.current_data is not None:
+            data = st.session_state.current_data
 
     # Only show configuration if data is loaded
     if st.session_state.data_loaded and st.session_state.current_data is not None:
