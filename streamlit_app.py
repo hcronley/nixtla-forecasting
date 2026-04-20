@@ -338,7 +338,7 @@ def build_backtest_models() -> Dict[str, Dict[str, Any]]:
     return models
 
 
-def display_backtest_results(backtest_results: Dict[str, Any]):
+def display_backtest_results(backtest_results: Dict[str, Any], data: pd.DataFrame = None, metadata: Dict = None):
     """
     Display backtesting results with visualizations and tables.
 
@@ -399,6 +399,10 @@ def display_backtest_results(backtest_results: Dict[str, Any]):
     # Show best model's forecast on full dataset
     st.subheader("📈 Best Model: Time Series Forecast")
     try:
+        if data is None or metadata is None:
+            st.info("Best model forecast unavailable: Original data not accessible")
+            return
+
         # Get best model info
         best_summary = comparator.get_summary_table()
         best_model_name = best_summary['Model']
@@ -1200,7 +1204,7 @@ def main():
         # Display Backtesting Results
         if st.session_state.backtest_results is not None:
             st.divider()
-            display_backtest_results(st.session_state.backtest_results)
+            display_backtest_results(st.session_state.backtest_results, data=data, metadata=metadata)
 
         # Display Single Model Results
         elif st.session_state.forecast_results is not None:
