@@ -47,18 +47,12 @@ except ImportError:
     SAMPLE_DATA_AVAILABLE = False
     st.warning("Sample data module not available. Only file upload will work.")
 
-# Import stock data clients (yfinance is free, Finnhub requires Pro+ for historical)
+# Import stock data client (yfinance - free)
 try:
-    from yfinance_client import fetch_stock_data as fetch_stock_data_yfinance
+    from yfinance_client import fetch_stock_data
     YFINANCE_AVAILABLE = True
 except ImportError:
     YFINANCE_AVAILABLE = False
-
-try:
-    from finnhub_client import fetch_stock_data as fetch_stock_data_finnhub
-    FINNHUB_AVAILABLE = True
-except ImportError:
-    FINNHUB_AVAILABLE = False
 
 # Import backtesting and reporting modules
 try:
@@ -691,14 +685,12 @@ def main():
     data_source_options = ["Upload CSV", "Sample Dataset"]
 
     if YFINANCE_AVAILABLE:
-        data_source_options.append("Stock Data (Yahoo Finance - Free)")
-    if FINNHUB_AVAILABLE:
-        data_source_options.append("Stock Data (Finnhub - Pro+)")
+        data_source_options.append("Stock Data (Yahoo Finance)")
 
     data_source = st.sidebar.radio(
         "Choose data source:",
         data_source_options,
-        help="Upload CSV, use sample data, or fetch real-time stock data"
+        help="Upload CSV, use sample data, or fetch real stock data"
     )
 
     data = None
@@ -751,8 +743,8 @@ def main():
         else:
             st.sidebar.error("Sample data module not available")
             
-    elif data_source == "Stock Data (Yahoo Finance - Free)":
-        st.sidebar.info("📊 Free historical stock data from Yahoo Finance.\n\n✅ No API key required\n✅ Daily/Weekly/Monthly data\n✅ 50+ years of history available")
+    elif data_source == "Stock Data (Yahoo Finance)":
+        st.sidebar.info("📊 Historical stock data from Yahoo Finance. No API key required.")
 
         symbol = st.sidebar.text_input("Stock Symbol:", value="AAPL", help="e.g., AAPL, TSLA, MSFT, GOOGL")
 
@@ -770,7 +762,7 @@ def main():
         if st.sidebar.button("Fetch Stock Data"):
             try:
                 with st.spinner(f"Fetching data for {symbol}..."):
-                    data = fetch_stock_data_yfinance(symbol, resolution, days_back)
+                    data = fetch_stock_data(symbol, resolution, days_back)
 
                     if data is not None and not data.empty:
                         st.sidebar.success(f"✅ Loaded {len(data)} rows for {symbol}")
@@ -780,63 +772,14 @@ def main():
                         metadata = {
                             'freq': freq_map.get(resolution, 'D'),
                             'season_length': 7 if resolution == 'D' else (52 if resolution == 'W' else 12),
-                            'description': f"Historical {res_label} data for {symbol} from Yahoo Finance",
+                            'description': f"Historical {res_label} data for {symbol}",
                             'recommended_horizon': 14 if resolution == 'D' else (13 if resolution == 'W' else 12)
                         }
 
                         st.session_state.current_data = data
                         st.session_state.data_loaded = True
                     else:
-                        st.sidebar.error("No data returned from Yahoo Finance.")
-            except Exception as e:
-                st.sidebar.error(f"Error: {str(e)}")
-
-        # Keep data if already loaded
-        if st.session_state.data_loaded and st.session_state.current_data is not None:
-            data = st.session_state.current_data
-
-    elif data_source == "Stock Data (Finnhub - Pro+)":
-        st.sidebar.info("📊 Premium historical stock data from Finnhub.\n\n⚠️ Requires Pro+ subscription\n✅ Intraday data (1/5/15/30/60 min)\n✅ Advanced features")
-
-        symbol = st.sidebar.text_input("Stock Symbol:", value="AAPL", help="e.g., AAPL, TSLA, MSFT, BTC/USD")
-
-        resolution_map = {
-            'Daily': 'D',
-            'Weekly': 'W',
-            'Monthly': 'M',
-            '60 min': '60',
-            '30 min': '30',
-            '15 min': '15',
-            '5 min': '5',
-            '1 min': '1'
-        }
-
-        res_label = st.sidebar.selectbox("Resolution:", options=list(resolution_map.keys()), index=0)
-        resolution = resolution_map[res_label]
-
-        days_back = st.sidebar.slider("Days of history:", min_value=7, max_value=3650, value=365)
-
-        if st.sidebar.button("Fetch Stock Data"):
-            try:
-                with st.spinner(f"Fetching data for {symbol}..."):
-                    data = fetch_stock_data_finnhub(symbol, resolution, days_back)
-
-                    if data is not None and not data.empty:
-                        st.sidebar.success(f"✅ Loaded {len(data)} rows for {symbol}")
-
-                        # Set metadata for frequency
-                        freq_map = {'D': 'D', 'W': 'W', 'M': 'M', '60': 'H'}
-                        metadata = {
-                            'freq': freq_map.get(resolution, 'D'),
-                            'season_length': 7 if resolution == 'D' else 12,
-                            'description': f"Historical {res_label} data for {symbol} from Finnhub",
-                            'recommended_horizon': 14 if resolution == 'D' else 12
-                        }
-
-                        st.session_state.current_data = data
-                        st.session_state.data_loaded = True
-                    else:
-                        st.sidebar.error("No data returned from Finnhub.")
+                        st.sidebar.error("No data returned.")
             except Exception as e:
                 st.sidebar.error(f"Error: {str(e)}")
 

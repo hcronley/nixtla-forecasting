@@ -6,7 +6,7 @@ pandas>=2.0.0
 numpy>=1.24.0
 plotly>=5.17.0
 
-# Stock data fetching (free alternative to Finnhub)
+# Stock data fetching (free, no API key required)
 yfinance>=0.2.0
 
 # Nixtla forecasting libraries (Core)
@@ -31,6 +31,5 @@ ray>=2.5.0
 
 # Additional utilities
 python-dateutil>=2.8.0
-finnhub-python
-python-dotenv
+
 
