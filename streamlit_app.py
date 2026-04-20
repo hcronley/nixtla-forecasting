@@ -929,6 +929,9 @@ def main():
         else:
             default_horizon = min(12, len(test_df))
 
+        # Ensure default_horizon doesn't exceed test set size
+        default_horizon = min(default_horizon, len(test_df))
+
         horizon = st.sidebar.number_input(
             "Forecast horizon (h):",
             min_value=1,
