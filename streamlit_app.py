@@ -924,7 +924,7 @@ def main():
                 "Multi-step recursive",
                 "Multi-output direct"
             ],
-            help="One-step=iterative (slowest, most accurate), Recursive=default, Direct=all at once"
+            help="One-step: Refit model for each step (slowest, most accurate). Recursive: Use previous predictions as inputs (balanced, realistic). Direct: Generate all predictions at once (fastest, sometimes less accurate)."
         )
 
         # Show warning for StatsForecast + Multi-output
@@ -936,7 +936,7 @@ def main():
         enable_backtesting = st.sidebar.checkbox(
             "🔄 Compare all models across 5 windows",
             value=False,
-            help="Run backtesting to compare all available models from all three libraries"
+            help="Rolling window cross-validation: Divides your data into 5 sequential time windows. Each window uses an expanding training set and tests on new unseen data. This simulates real-world deployment and compares all available models fairly."
         )
 
         # Parameters
@@ -1278,6 +1278,17 @@ def main():
         | StatsForecast | ✅ | ✅ | ❌ |
         | MLForecast | ✅ | ✅ | ✅ |
         | NeuralForecast | ✅ | ✅ | ✅ |
+
+        ### Rolling Window Cross-Validation
+
+        **Windows** are sequential time periods used for backtesting:
+        - Your data is split into 5 sequential windows
+        - Each window has a training set and a test set
+        - **Window 1**: Train on data[0:50%], test on data[50:60%]
+        - **Window 2**: Train on data[0:60%], test on data[60:70%]
+        - And so on...
+
+        This approach tests models on progressively newer data without data leakage, simulating real-world deployment scenarios. Results are aggregated to rank models fairly.
         """)
 
 
