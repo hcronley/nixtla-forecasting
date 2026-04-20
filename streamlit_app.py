@@ -430,31 +430,39 @@ def display_backtest_results(backtest_results: Dict[str, Any], data: pd.DataFram
 
         if module_type == 'StatsForecast':
             from df_statsforecast import StatsforecastForecaster
-            forecaster = StatsforecastForecaster()
-            best_results = forecaster.forecast(
-                train_full, test_full,
+            forecaster = StatsforecastForecaster(
                 model_type=model_type,
-                strategy='Multi-step recursive',
-                **forecast_params
+                freq=forecast_params['freq'],
+                season_length=forecast_params['season_length']
+            )
+            best_results = forecaster.multi_step_forecast(
+                train_full,
+                horizon=forecast_params['horizon'],
+                test_df=test_full
             )
         elif module_type == 'MLForecast':
             from df_mlforecast import MLForecastForecaster
-            forecaster = MLForecastForecaster()
-            best_results = forecaster.forecast(
-                train_full, test_full,
+            forecaster = MLForecastForecaster(
                 model_type=model_type,
-                strategy='Multi-step recursive',
-                **forecast_params
+                freq=forecast_params['freq']
+            )
+            best_results = forecaster.multi_step_forecast(
+                train_full,
+                horizon=forecast_params['horizon'],
+                test_df=test_full
             )
         elif module_type == 'NeuralForecast':
             from df_neuralforecast import NeuralForecastForecaster
-            forecaster = NeuralForecastForecaster()
-            best_results = forecaster.forecast(
-                train_full, test_full,
+            forecaster = NeuralForecastForecaster(
                 model_type=model_type,
-                strategy='Multi-step recursive',
+                freq=forecast_params['freq'],
                 input_size=min(12, len(train_full) // 2),
-                **forecast_params
+                horizon=forecast_params['horizon']
+            )
+            best_results = forecaster.multi_output_forecast(
+                train_full,
+                horizon=forecast_params['horizon'],
+                test_df=test_full
             )
 
         if best_results:
