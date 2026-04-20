@@ -473,6 +473,36 @@ def display_backtest_results(backtest_results: Dict[str, Any]):
         )
 
 
+
+    # 🏁 HORSE RACE VISUALIZATIONS - TOP 5 MODEL COMPARISON
+    st.header("🏁 Top 5 Model Horse Race")
+    st.markdown("Compare the top 5 forecasting models across metrics and windows")
+    
+    # Create 2-column layout for first two visualizations
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.subheader("Rankings with Confidence Bands")
+        fig_ranked = comparator.create_top5_ranked_comparison(top_n=5)
+        st.plotly_chart(fig_ranked, use_container_width=True)
+    
+    with col2:
+        st.subheader("How Rankings Changed Across Windows")
+        fig_progression = comparator.create_ranking_progression_heatmap(top_n=5)
+        st.plotly_chart(fig_progression, use_container_width=True)
+    
+    # Full-width waterfall chart
+    st.subheader("Performance Gap Analysis")
+    st.caption("Shows how much each model's performance differs from the top model")
+    fig_waterfall = comparator.create_metric_race_waterfall(metric='mae_mean', top_n=5)
+    st.plotly_chart(fig_waterfall, use_container_width=True)
+    
+    # Expandable portfolio dashboard for presentations
+    with st.expander("📊 Comprehensive Portfolio Dashboard (All Metrics)"):
+        st.info("Use this dashboard for presentations and portfolio showcase - combines all key visualizations")
+        fig_portfolio = comparator.create_top5_portfolio_summary()
+        st.plotly_chart(fig_portfolio, use_container_width=True, height=900)
+
 def fix_forecast_actuals(results: Dict[str, Any], test_df: pd.DataFrame, horizon: int) -> Dict[str, Any]:
     """
     Fix actual values in forecast results by properly aligning with test data.
