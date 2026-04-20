@@ -62,7 +62,7 @@ except ImportError:
     BACKTESTING_AVAILABLE = False
 
 try:
-    from reporting import ModelComparator, create_summary_report, create_top5_timeseries_plot
+    from reporting import ModelComparator, create_summary_report
     REPORTING_AVAILABLE = True
 except ImportError:
     REPORTING_AVAILABLE = False
@@ -395,14 +395,6 @@ def display_backtest_results(backtest_results: Dict[str, Any]):
     st.subheader("📋 Model Rankings")
     ranking_table = comparator.create_metric_comparison_table(top_n=10)
     st.dataframe(ranking_table, use_container_width=True, hide_index=True)
-
-    # Time Series Plot with Top 5 Models
-    st.subheader("📈 Top 5 Models: Time Series Overlay")
-    try:
-        fig_timeseries = create_top5_timeseries_plot(backtest_results, backtest_results.get('original_data'))
-        st.plotly_chart(fig_timeseries, use_container_width=True)
-    except Exception as e:
-        st.info("Time series plot unavailable for this dataset")
 
     # Save best model config
     if CONFIG_MANAGER_AVAILABLE:

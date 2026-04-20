@@ -411,8 +411,7 @@ class RollingWindowBacktester:
             'window_results': all_window_results,
             'model_rankings': rankings,
             'windows': self.windows,
-            'models': models,
-            'original_data': self.data
+            'models': models
         }
 
         return self.results
